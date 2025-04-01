@@ -1,4 +1,4 @@
-package main
+package tool
 
 import (
 	"context"
@@ -6,11 +6,10 @@ import (
 	"github.com/chromedp/chromedp"
 	"io/ioutil"
 	"log"
-	"strings"
 	"time"
 )
 
-func takeScreenshot(url string) {
+func TakeScreenshot(url string) {
 	// 创建一个上下文
 	ctx, cancel := chromedp.NewContext(context.Background())
 	defer cancel()
@@ -49,9 +48,4 @@ func takeScreenshot(url string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-}
-
-func sanitizeFilename(url string) string {
-	// 替换非法字符，例如将 "://" 替换为 "_"
-	return strings.ReplaceAll(url, "://", "_")
 }

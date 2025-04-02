@@ -7,11 +7,11 @@ import (
 	"time"
 )
 
-func Fofa(userApi string) string {
-	url := "https://fofa.info/api/v1/search/all?&qbase64=dGl0bGU9IueZvuW6piI=&fields=link&size=10&key="
+func Fofa(userApi string, queryContent string) string {
+	url := "https://fofa.info/api/v1/search/all?&fields=link&size=10&key="
 
 	url += userApi
-
+	url += queryContent
 	client := &http.Client{
 		Timeout: 10 * time.Second,
 	}

@@ -2,6 +2,7 @@
 package tool
 
 import (
+	"encoding/base64"
 	"fmt"
 	"github.com/urfave/cli/v2"
 	"sync"
@@ -11,17 +12,12 @@ func CliInit() *cli.App {
 	app := &cli.App{
 		//参数定义
 		Flags: []cli.Flag{
-			/*&cli.StringFlag{
+			&cli.StringFlag{
 				Name:     "key",
 				Usage:    "FOFA API Key",
 				EnvVars:  []string{"FOFA_API_KEY"},
 				Required: true,
 			},
-			&cli.StringFlag{
-				Name:    "email",
-				Usage:   "FOFA Email",
-				EnvVars: []string{"FOFA_EMAIL"},
-			},*/
 			&cli.StringFlag{
 				Name:    "query",
 				Aliases: []string{"q"},
@@ -32,7 +28,10 @@ func CliInit() *cli.App {
 		//cli.exe触发
 		Action: func(c *cli.Context) error {
 			//调用FOFA
-			resBody := Fofa("8b9524c1ec8db699ae7b3803ac1ea19d")
+			query := c.String("query")
+			base64QueryRes := base64QueryArg(query)
+			apiKey := c.String("key")
+			resBody := Fofa(apiKey, base64QueryRes)
 			//解析resBody
 			response, err2 := FofaResJsonDes(resBody)
 			if err2 != nil {
@@ -56,7 +55,6 @@ func CliInit() *cli.App {
 			NewThreadPool(number)
 			for i := 0; i < len(response.Results); i++ {
 				AppendJob(func() {
-					//todo select截图和3秒定时任务
 					filePath, err := TakeScreenshot(response.Results[i])
 					if err != nil {
 						fmt.Printf("%s    %v\n", response.Results[i], err)
@@ -73,4 +71,11 @@ func CliInit() *cli.App {
 		},
 	}
 	return app
+}
+
+func base64QueryArg(QueryContent string) string {
+	QueryContent = "title=\"" + QueryContent + "\""
+	encoded := base64.StdEncoding.EncodeToString([]byte(QueryContent))
+	encoded = "&qbase64=" + encoded
+	return encoded
 }

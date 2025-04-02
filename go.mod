@@ -5,12 +5,13 @@ go 1.23
 toolchain go1.23.7
 
 require (
-	github.com/chromedp/cdproto v0.0.0-20250319231242-a755498943c8
 	github.com/chromedp/chromedp v0.13.3
+	github.com/google/uuid v1.6.0
 	github.com/urfave/cli/v2 v2.27.6
 )
 
 require (
+	github.com/chromedp/cdproto v0.0.0-20250319231242-a755498943c8 // indirect
 	github.com/chromedp/sysutil v1.1.0 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.5 // indirect
 	github.com/go-json-experiment/json v0.0.0-20250211171154-1ae217ad3535 // indirect

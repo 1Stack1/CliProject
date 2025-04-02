@@ -2,50 +2,51 @@ package tool
 
 import (
 	"context"
-	"github.com/chromedp/cdproto/page"
+	"fmt"
 	"github.com/chromedp/chromedp"
-	"io/ioutil"
+	"github.com/google/uuid"
 	"log"
+	"os"
+	"path/filepath"
 	"time"
 )
 
-func TakeScreenshot(url string) {
-	// 创建一个上下文
-	ctx, cancel := chromedp.NewContext(context.Background())
-	defer cancel()
-
-	// 设置浏览器选项
-	opts := append(chromedp.DefaultExecAllocatorOptions[:],
-		chromedp.Flag("headless", true),
-		chromedp.Flag("disable-gpu", true),
-		chromedp.Flag("no-sandbox", true),
-		chromedp.Flag("disable-dev-shm-usage", true),
-		chromedp.Flag("remote-debugging-port", "9222"),
+// TakeScreenshot 截取网页截图并返回文件路径
+func TakeScreenshot(url string) (string, error) {
+	// 创建上下文（合并冗余的上下文创建）
+	ctx, cancel := chromedp.NewContext(
+		context.Background(),
+		chromedp.WithLogf(log.Printf), // 可选：记录浏览器日志
 	)
-	allocCtx, cancel := chromedp.NewExecAllocator(ctx, opts...)
 	defer cancel()
 
-	// 创建一个浏览器实例
-	ctx, cancel = chromedp.NewContext(allocCtx)
-	defer cancel()
+	// 生成唯一文件名
+	fileName := fmt.Sprintf("screenshot_%s_%d.png",
+		uuid.New().String()[:8], // 取UUID前8位
+		time.Now().UnixNano(),   // 添加时间戳防止冲突
+	)
+	filePath := filepath.Join("./screenshots", fileName)
 
-	// 导航到指定的URL
+	// 创建存储目录
+	if err := os.MkdirAll("./screenshots", 0755); err != nil {
+		return "", fmt.Errorf("创建目录失败: %w", err)
+	}
+
+	// 执行截图操作
 	var buf []byte
-	err := chromedp.Run(ctx, chromedp.Navigate(url), chromedp.Sleep(2*time.Second), chromedp.ActionFunc(func(ctx context.Context) error {
-		// 获取页面截图
-		var err error
-		buf, err = page.CaptureScreenshot().WithQuality(90).WithClip(&page.Viewport{X: 0, Y: 0, Width: 1920, Height: 1080, Scale: 1}).Do(ctx)
-		if err != nil {
-			return err
-		}
-		return nil
-	}))
+	err := chromedp.Run(ctx,
+		chromedp.Navigate(url),
+		chromedp.Sleep(2*time.Second),     // 等待页面加载
+		chromedp.FullScreenshot(&buf, 90), // 直接截取全屏（替代手动设置视口）
+	)
 	if err != nil {
-		log.Fatal(err)
+		return "", fmt.Errorf("截图失败: %w", err)
 	}
-	// 将截图保存到文件
-	err = ioutil.WriteFile("screenshot.png", buf, 0644)
-	if err != nil {
-		log.Fatal(err)
+
+	// 保存文件
+	if err := os.WriteFile(filePath, buf, 0644); err != nil {
+		return "", fmt.Errorf("文件保存失败: %w", err)
 	}
+
+	return filePath, nil
 }

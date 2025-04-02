@@ -1,6 +1,42 @@
 // main.go
 package tool
 
-func a() {
+import (
+	"fmt"
+	"github.com/urfave/cli/v2"
+)
 
+func CliInit() *cli.App {
+	app := &cli.App{
+		//参数定义
+		Flags: []cli.Flag{
+			/*&cli.StringFlag{
+				Name:     "key",
+				Usage:    "FOFA API Key",
+				EnvVars:  []string{"FOFA_API_KEY"},
+				Required: true,
+			},
+			&cli.StringFlag{
+				Name:    "email",
+				Usage:   "FOFA Email",
+				EnvVars: []string{"FOFA_EMAIL"},
+			},*/
+			&cli.StringFlag{
+				Name:     "query",
+				Aliases:  []string{"q"},
+				Usage:    "Search query",
+				Required: true, // 标记为必填参数
+			},
+		},
+		//cli.exe触发
+		Action: func(c *cli.Context) error {
+			filePath, err := TakeScreenshot("https://www.baidu.com")
+			if err != nil {
+				return err
+			}
+			fmt.Println(filePath)
+			return nil
+		},
+	}
+	return app
 }

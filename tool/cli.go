@@ -22,19 +22,31 @@ func CliInit() *cli.App {
 				EnvVars: []string{"FOFA_EMAIL"},
 			},*/
 			&cli.StringFlag{
-				Name:     "query",
-				Aliases:  []string{"q"},
-				Usage:    "Search query",
-				Required: true, // 标记为必填参数
+				Name:    "query",
+				Aliases: []string{"q"},
+				Usage:   "Search query",
+				//Required: true, // 标记为必填参数
 			},
 		},
 		//cli.exe触发
 		Action: func(c *cli.Context) error {
-			filePath, err := TakeScreenshot("https://www.baidu.com")
-			if err != nil {
-				return err
+			//todo 调用FOFA
+
+			//todo 根据url并发截图
+			configPath := "./config"
+			configName := "config"
+			configType := "yml"
+			v := ConfigInit(configPath, configName, configType)
+
+			for true {
+				number, err := ConfigRead(v)
+				if err != nil {
+					return err
+				}
+				fmt.Println(number)
+				filePath, err := TakeScreenshot("https://www.baidu.com")
+				fmt.Println(filePath)
 			}
-			fmt.Println(filePath)
 			return nil
 		},
 	}

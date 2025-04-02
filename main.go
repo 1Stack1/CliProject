@@ -7,10 +7,12 @@ import (
 )
 
 func main() {
-
 	app := tool.CliInit()
 	if err := app.Run(os.Args); err != nil {
 		log.Fatal(err)
 	}
-	//tool.TakeScreenshot("https://www.baidu.com")
+	//8b9524c1ec8db699ae7b3803ac1ea19d
 }
+
+/*
+}*/

@@ -4,6 +4,7 @@ package tool
 import (
 	"fmt"
 	"github.com/urfave/cli/v2"
+	"sync"
 )
 
 func CliInit() *cli.App {
@@ -36,17 +37,34 @@ func CliInit() *cli.App {
 			configPath := "./config"
 			configName := "config"
 			configType := "yml"
-			v := ConfigInit(configPath, configName, configType)
-
-			for true {
-				number, err := ConfigRead(v)
-				if err != nil {
-					return err
-				}
-				fmt.Println(number)
-				filePath, err := TakeScreenshot("https://www.baidu.com")
-				fmt.Println(filePath)
+			v, err := ConfigInit(configPath, configName, configType)
+			var wg sync.WaitGroup
+			if err != nil {
+				return err
 			}
+			number, err := ConfigRead(v)
+			if err != nil {
+				return err
+			}
+			if number <= 0 {
+				number = 1
+			}
+			fmt.Println(number)
+			NewThreadPool(number)
+			for i := 0; i < 20; i++ {
+
+				AppendJob(func() {
+					filePath, err := TakeScreenshot("https://www.baidu.com")
+					fmt.Println(filePath)
+					if err != nil {
+						fmt.Println(err)
+					}
+				}, &wg)
+			}
+			wg.Wait()
+			/*for true {
+
+			}*/
 			return nil
 		},
 	}

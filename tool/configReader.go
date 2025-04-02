@@ -18,13 +18,13 @@ var (
 	ignoredFiles = []string{".tmp", "~"} // 需要忽略的文件后缀
 )
 
-func ConfigInit(configPath string, configName string, configType string) *viper.Viper {
+func ConfigInit(configPath string, configName string, configType string) (*viper.Viper, error) {
 	v := viper.New()
 	v.AddConfigPath(configPath)
 	v.SetConfigName(configName)
 	v.SetConfigType(configType)
 	if err := v.ReadInConfig(); err != nil {
-		panic(err)
+		return nil, err
 	}
 	v.WatchConfig()
 	v.OnConfigChange(func(e fsnotify.Event) {
@@ -46,11 +46,14 @@ func ConfigInit(configPath string, configName string, configType string) *viper.
 			panic(err)
 		}
 	})
-	return v
+	return v, nil
 }
 
 func ConfigRead(v *viper.Viper) (int, error) {
 	numberStr := v.GetString("number")
+	if numberStr == "" {
+		return -1, nil
+	}
 	number, err := strconv.Atoi(numberStr)
 	if err != nil {
 		return 0, fmt.Errorf("number转换为整数错误: %w", err)

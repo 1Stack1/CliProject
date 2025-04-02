@@ -31,14 +31,15 @@ func CliInit() *cli.App {
 		},
 		//cli.exe触发
 		Action: func(c *cli.Context) error {
-			//todo 调用FOFA
-
-			//todo 根据url并发截图
-			configPath := "./config"
-			configName := "config"
-			configType := "yml"
+			//调用FOFA
+			resBody := Fofa("8b9524c1ec8db699ae7b3803ac1ea19d")
+			//解析resBody
+			response, err2 := FofaResJsonDes(resBody)
+			if err2 != nil {
+			}
+			//读取配置文件
+			configPath, configName, configType := "./config", "config", "yml"
 			v, err := ConfigInit(configPath, configName, configType)
-			var wg sync.WaitGroup
 			if err != nil {
 				return err
 			}
@@ -49,15 +50,18 @@ func CliInit() *cli.App {
 			if number <= 0 {
 				number = 1
 			}
-			fmt.Println(number)
+			fmt.Println("config_number", number)
+			//根据url并发截图
+			var wg sync.WaitGroup
 			NewThreadPool(number)
-			for i := 0; i < 20; i++ {
-
+			for i := 0; i < len(response.Results); i++ {
 				AppendJob(func() {
-					filePath, err := TakeScreenshot("https://www.baidu.com")
-					fmt.Println(filePath)
+					//todo select截图和3秒定时任务
+					filePath, err := TakeScreenshot(response.Results[i])
 					if err != nil {
-						fmt.Println(err)
+						fmt.Printf("%s    %v\n", response.Results[i], err)
+					} else {
+						fmt.Printf("%s    %s\n", response.Results[i], filePath)
 					}
 				}, &wg)
 			}

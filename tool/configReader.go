@@ -50,8 +50,7 @@ func ConfigInit(configPath string, configName string, configType string) (*viper
 }
 
 /*
-*
-读取并发携程数
+读取并发协程数
 */
 func ConfigReadConcurrency(v *viper.Viper) (int, error) {
 	numberStr := v.GetString("number_concurrency")
@@ -66,7 +65,6 @@ func ConfigReadConcurrency(v *viper.Viper) (int, error) {
 }
 
 /*
-*
 读取搜索数量
 */
 func ConfigReadCount(v *viper.Viper) (int, error) {
@@ -79,4 +77,12 @@ func ConfigReadCount(v *viper.Viper) (int, error) {
 		return 0, fmt.Errorf("number转换为整数错误: %w", err)
 	}
 	return count, nil
+}
+
+/*
+读取代理地址
+*/
+func ConfigReadProxy(v *viper.Viper) string {
+	proxyUrlStr := v.GetString("proxy_url")
+	return proxyUrlStr
 }

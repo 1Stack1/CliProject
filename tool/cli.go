@@ -4,7 +4,9 @@ package tool
 import (
 	"encoding/base64"
 	"fmt"
+	"github.com/spf13/viper"
 	"github.com/urfave/cli/v2"
+	"strconv"
 	"sync"
 )
 
@@ -23,6 +25,8 @@ var flags = []cli.Flag{
 	},
 }
 
+var configPath, configName, configType = "./config", "config", "yml"
+
 func CliInit() *cli.App {
 	app := &cli.App{
 		//参数定义
@@ -31,16 +35,23 @@ func CliInit() *cli.App {
 		Action: func(c *cli.Context) error {
 			//调用FOFA
 			query := c.String("query")
-			base64QueryRes := base64QueryArg(query)
 			apiKey := c.String("key")
-			next := ""
 			//读取配置文件
-			configPath, configName, configType := "./config", "config", "yml"
-			page := 0
-			count, numberConcurrency, err := readFromConfig(configPath, configName, configType)
+			v, err := ConfigInit(configPath, configName, configType)
 			if err != nil {
 				return err
 			}
+			count, numberConcurrency, err := readFromConfig(v)
+			if err != nil {
+				return err
+			}
+			transport, err := proxyConfig(v)
+			if err != nil {
+				return err
+			}
+			//循环调用fofa
+			next := ""
+			page := 0
 			for true {
 				var resBody string
 				var size int
@@ -52,16 +63,17 @@ func CliInit() *cli.App {
 					size = count - 10*page
 				}
 				if next == "" {
-					resBody = Fofa(apiKey, base64QueryRes, "", size)
+					url := fofaUrlInit(apiKey, query, "", size)
+					resBody = Fofa(url, transport)
 				} else {
 					pageContent := "&next=" + next
-					resBody = Fofa(apiKey, base64QueryRes, pageContent, size)
+					url := fofaUrlInit(apiKey, query, pageContent, size)
+					resBody = Fofa(url, transport)
 				}
 				//解析resBody
 				response, err2 := FofaResJsonDes(resBody)
 				if err2 != nil {
 				}
-
 				fmt.Println("config_number", numberConcurrency)
 				//根据url并发截图
 				var wg sync.WaitGroup
@@ -93,11 +105,10 @@ func base64QueryArg(QueryContent string) string {
 	return encoded
 }
 
-func readFromConfig(configPath string, configName string, configType string) (int, int, error) {
-	v, err := ConfigInit(configPath, configName, configType)
-	if err != nil {
-		return 0, 0, err
-	}
+/*
+return 查询记录数，并发下载线程数，error
+*/
+func readFromConfig(v *viper.Viper) (int, int, error) {
 	count, err1 := ConfigReadCount(v)
 	if err1 != nil {
 		return 0, 0, err1
@@ -110,4 +121,15 @@ func readFromConfig(configPath string, configName string, configType string) (in
 		numberConcurrency = 1
 	}
 	return count, numberConcurrency, nil
+}
+
+func fofaUrlInit(userApi string, queryContent string, nextContent string, size int) string {
+	base64QueryRes := base64QueryArg(queryContent)
+
+	url := "https://fofa.info/api/v1/search/next?&fields=link%2Ctitle%2Cstatus_code&key="
+	url += userApi
+	url += base64QueryRes
+	url += nextContent
+	url += "&size=" + strconv.Itoa(size)
+	return url
 }

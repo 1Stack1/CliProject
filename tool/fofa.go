@@ -4,15 +4,17 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"time"
 )
 
-func Fofa(userApi string, queryContent string, pageContent string) string {
-	url := "https://fofa.info/api/v1/search/next?&fields=link%2Ctitle%2Cstatus_code&size=10&key="
+func Fofa(userApi string, queryContent string, pageContent string, size int) string {
+	url := "https://fofa.info/api/v1/search/next?&fields=link%2Ctitle%2Cstatus_code&key="
 
 	url += userApi
 	url += queryContent
 	url += pageContent
+	url += "&size=" + strconv.Itoa(size)
 	client := &http.Client{
 		Timeout: 10 * time.Second,
 	}

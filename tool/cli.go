@@ -34,35 +34,38 @@ func CliInit() *cli.App {
 			base64QueryRes := base64QueryArg(query)
 			apiKey := c.String("key")
 			next := ""
+			//读取配置文件
+			configPath, configName, configType := "./config", "config", "yml"
+			page := 0
+			count, numberConcurrency, err := readFromConfig(configPath, configName, configType)
+			if err != nil {
+				return err
+			}
 			for true {
 				var resBody string
+				var size int
+				if (count - 10*page) >= 10 {
+					size = 10
+				} else if count <= 10*page {
+					break
+				} else {
+					size = count - 10*page
+				}
 				if next == "" {
-					resBody = Fofa(apiKey, base64QueryRes, "")
+					resBody = Fofa(apiKey, base64QueryRes, "", size)
 				} else {
 					pageContent := "&next=" + next
-					resBody = Fofa(apiKey, base64QueryRes, pageContent)
+					resBody = Fofa(apiKey, base64QueryRes, pageContent, size)
 				}
 				//解析resBody
 				response, err2 := FofaResJsonDes(resBody)
 				if err2 != nil {
 				}
-				//读取配置文件
-				configPath, configName, configType := "./config", "config", "yml"
-				v, err := ConfigInit(configPath, configName, configType)
-				if err != nil {
-					return err
-				}
-				number, err := ConfigRead(v)
-				if err != nil {
-					return err
-				}
-				if number <= 0 {
-					number = 1
-				}
-				fmt.Println("config_number", number)
+
+				fmt.Println("config_number", numberConcurrency)
 				//根据url并发截图
 				var wg sync.WaitGroup
-				NewThreadPool(number)
+				NewThreadPool(numberConcurrency)
 				for i := 0; i < len(response.Results); i++ {
 					AppendJob(func() {
 						filePath, err := TakeScreenshot(response.Results[i][0])
@@ -75,7 +78,7 @@ func CliInit() *cli.App {
 				}
 				wg.Wait()
 				next = response.Next
-				//todo 判断结束
+				page++
 			}
 			return nil
 		},
@@ -88,4 +91,23 @@ func base64QueryArg(QueryContent string) string {
 	encoded := base64.StdEncoding.EncodeToString([]byte(QueryContent))
 	encoded = "&qbase64=" + encoded
 	return encoded
+}
+
+func readFromConfig(configPath string, configName string, configType string) (int, int, error) {
+	v, err := ConfigInit(configPath, configName, configType)
+	if err != nil {
+		return 0, 0, err
+	}
+	count, err1 := ConfigReadCount(v)
+	if err1 != nil {
+		return 0, 0, err1
+	}
+	numberConcurrency, err := ConfigReadConcurrency(v)
+	if err != nil {
+		return 0, 0, err
+	}
+	if numberConcurrency <= 0 {
+		numberConcurrency = 1
+	}
+	return count, numberConcurrency, nil
 }

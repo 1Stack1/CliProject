@@ -49,14 +49,34 @@ func ConfigInit(configPath string, configName string, configType string) (*viper
 	return v, nil
 }
 
-func ConfigRead(v *viper.Viper) (int, error) {
-	numberStr := v.GetString("number")
+/*
+*
+读取并发携程数
+*/
+func ConfigReadConcurrency(v *viper.Viper) (int, error) {
+	numberStr := v.GetString("number_concurrency")
 	if numberStr == "" {
 		return -1, nil
 	}
-	number, err := strconv.Atoi(numberStr)
+	numberConcurrency, err := strconv.Atoi(numberStr)
 	if err != nil {
 		return 0, fmt.Errorf("number转换为整数错误: %w", err)
 	}
-	return number, nil
+	return numberConcurrency, nil
+}
+
+/*
+*
+读取搜索数量
+*/
+func ConfigReadCount(v *viper.Viper) (int, error) {
+	countStr := v.GetString("count")
+	if countStr == "" {
+		return 10, nil
+	}
+	count, err := strconv.Atoi(countStr)
+	if err != nil {
+		return 0, fmt.Errorf("number转换为整数错误: %w", err)
+	}
+	return count, nil
 }

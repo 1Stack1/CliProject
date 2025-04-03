@@ -10,12 +10,12 @@ type Response struct {
 	Error            bool
 	Consumed_fpoint  int
 	Required_fpoints int
+	Next             string
 	Size             int
 	Tip              string
-	Page             int
 	Mode             string
 	Query            string
-	Results          []string
+	Results          [][]string
 }
 
 func FofaResJsonDes(resJson string) (*Response, error) {

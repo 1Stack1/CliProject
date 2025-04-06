@@ -19,6 +19,9 @@ go build -o cli.exe main.go
 ```shell
 url  状态码  标题  浏览器截图存放路径
 ```
+调用结果示例
+
+![](img/Snipaste_2025-04-06_15-15-56.png)
 
 # 支持配置文件读取
 

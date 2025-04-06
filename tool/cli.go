@@ -74,7 +74,7 @@ func CliInit() *cli.App {
 				response, err2 := FofaResJsonDes(resBody)
 				if err2 != nil {
 				}
-				fmt.Println("config_number", numberConcurrency)
+				//fmt.Println("config_number", numberConcurrency)
 				//根据url并发截图
 				var wg sync.WaitGroup
 				NewThreadPool(numberConcurrency)
@@ -82,9 +82,9 @@ func CliInit() *cli.App {
 					AppendJob(func() {
 						filePath, err := TakeScreenshot(response.Results[i][0])
 						if err != nil {
-							fmt.Printf("%-70s   %-100s   %s   %v\n", response.Results[i][0], response.Results[i][1], response.Results[i][2], err)
+							fmt.Printf("%s   %s   %s   %v\n", response.Results[i][0], response.Results[i][1], response.Results[i][2], err)
 						} else {
-							fmt.Printf("%-70s   %-100s   %s   %s\n", response.Results[i][0], response.Results[i][1], response.Results[i][2], filePath)
+							fmt.Printf("%s   %s   %s   %s\n", response.Results[i][0], response.Results[i][1], response.Results[i][2], filePath)
 						}
 					}, &wg)
 				}

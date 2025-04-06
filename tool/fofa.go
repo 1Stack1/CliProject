@@ -27,6 +27,6 @@ func Fofa(url string, transport *http.Transport) string {
 	defer resp.Body.Close()
 
 	body, _ := ioutil.ReadAll(resp.Body)
-	fmt.Printf("内容: %s\n", string(body))
+	//fmt.Printf("内容: %s\n", string(body))
 	return string(body)
 }

@@ -5,7 +5,7 @@
 生成cli.exe
 
 ```shell
-go build -o cli main.go
+go build -o cli.exe main.go
 ```
 
 进行FOFA查询，并调用chrome截图
